@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KshonMail API Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #1c1e21;
+            margin: 0;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        header {
+            background-color: #1877f2;
+            color: white;
+            padding: 16px 24px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        .card {
+            border: 1px solid #dddfe2;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .card-header {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #606770;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        label {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        input[type="text"] {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #dddfe2;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .button-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        button {
+            background-color: #e4e6eb;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #d8dbdf;
+        }
+        button.primary {
+            background-color: #1877f2;
+            color: white;
+        }
+        button.primary:hover {
+            background-color: #166fe5;
+        }
+        button.destructive {
+            background-color: #fa3e3e;
+            color: white;
+        }
+        button.destructive:hover {
+            background-color: #e33434;
+        }
+        button:disabled {
+            background-color: #f0f2f5;
+            color: #bcc0c4;
+            cursor: not-allowed;
+        }
+        .result-box {
+            background-color: #f0f2f5;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            word-wrap: break-word;
+            min-height: 20px;
+        }
+        #log {
+            margin-top: 16px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        #inbox-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        #inbox-list li {
+            padding: 12px;
+            border-bottom: 1px solid #dddfe2;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #inbox-list li:hover {
+            background-color: #f0f2f5;
+        }
+        #inbox-list li .subject {
+            font-weight: 600;
+        }
+        #inbox-list li .from {
+            font-size: 12px;
+            color: #606770;
+        }
+        #email-body-view {
+            border: 1px solid #dddfe2;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            min-height: 100px;
+            overflow-wrap: break-word;
+        }
+        #email-body-view iframe {
+            width: 100%;
+            border: none;
+            min-height: 300px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>KshonMail API Test Panel</header>
+        <div class="content">
+            <!-- API Configuration -->
+            <div class="card">
+                <div class="card-header">API Configuration</div>
+                <div class="input-group">
+                    <label for="api-base-url">API Base URL</label>
+                    <input type="text" id="api-base-url" placeholder="e.g., http://localhost:9002">
+                    <label for="api-key">API Key</label>
+                    <input type="text" id="api-key" placeholder="Enter your API Key">
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="card">
+                <div class="card-header">Controls</div>
+                <div class="button-group">
+                    <button id="generate-btn" class="primary">Generate New Email</button>
+                    <button id="refresh-btn" disabled>Refresh Inbox</button>
+                    <button id="delete-btn" class="destructive" disabled>Delete Email Address</button>
+                </div>
+            </div>
+
+            <!-- Email Display -->
+            <div class="card">
+                <div class="card-header">Generated Email Address</div>
+                <div id="email-display" class="result-box"></div>
+            </div>
+            
+            <!-- Logs -->
+            <div class="card">
+                <div class="card-header">Logs</div>
+                <div id="log" class="result-box"></div>
+            </div>
+
+            <!-- Inbox -->
+            <div class="card">
+                <div class="card-header">Inbox</div>
+                <ul id="inbox-list">
+                    <li id="inbox-placeholder">Inbox is empty.</li>
+                </ul>
+            </div>
+            
+            <!-- Email Body View -->
+            <div class="card" id="email-body-container" style="display: none;">
+                <div class="card-header">Email Content</div>
+                 <button id="back-to-inbox-btn">Back to Inbox</button>
+                <div id="email-body-view">
+                    <iframe id="email-iframe"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiBaseUrlInput = document.getElementById('api-base-url');
+        const apiKeyInput = document.getElementById('api-key');
+        const generateBtn = document.getElementById('generate-btn');
+        const refreshBtn = document.getElementById('refresh-btn');
+        const deleteBtn = document.getElementById('delete-btn');
+        const emailDisplay = document.getElementById('email-display');
+        const logDisplay = document.getElementById('log');
+        const inboxList = document.getElementById('inbox-list');
+        const inboxPlaceholder = document.getElementById('inbox-placeholder');
+        const emailBodyContainer = document.getElementById('email-body-container');
+        const emailBodyView = document.getElementById('email-body-view');
+        const emailIframe = document.getElementById('email-iframe');
+        const backToInboxBtn = document.getElementById('back-to-inbox-btn');
+
+        let currentEmail = null;
+        let emails = [];
+        
+        // Set default base URL
+        apiBaseUrlInput.value = window.location.origin;
+
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            entry.style.color = type === 'error' ? 'red' : 'black';
+            logDisplay.prepend(entry);
+        }
+
+        async function apiRequest(endpoint, body) {
+            const apiKey = apiKeyInput.value;
+            const apiBaseUrl = apiBaseUrlInput.value;
+            if (!apiKey) {
+                log('API Key is required.', 'error');
+                throw new Error('API Key is required.');
+            }
+            if (!apiBaseUrl) {
+                log('API Base URL is required.', 'error');
+                throw new Error('API Base URL is required.');
+            }
+
+            log(`Requesting POST ${apiBaseUrl}/api/${endpoint}...`);
+            const response = await fetch(`${apiBaseUrl}/api/${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': apiKey,
+                },
+                body: JSON.stringify(body),
+            });
+
+            const responseData = await response.json();
+
+            if (!response.ok) {
+                log(`Error: ${responseData.message || `Status ${response.status}`}`, 'error');
+                throw new Error(responseData.message);
+            }
+
+            log(`Success: ${JSON.stringify(responseData)}`);
+            return responseData;
+        }
+
+        async function handleGenerateEmail() {
+            try {
+                const data = await apiRequest('generate-email', {});
+                currentEmail = data.email;
+                emailDisplay.textContent = currentEmail;
+                refreshBtn.disabled = false;
+                deleteBtn.disabled = false;
+                inboxList.innerHTML = `<li id="inbox-placeholder">Inbox is empty.</li>`;
+            } catch (error) {
+                // Error is already logged in apiRequest
+            }
+        }
+
+        async function handleFetchEmails() {
+            if (!currentEmail) return;
+            try {
+                const fetchedEmails = await apiRequest('fetch-emails', { emailAddress: currentEmail });
+                emails = fetchedEmails;
+                renderInbox();
+            } catch (error) {
+                // Error is already logged in apiRequest
+            }
+        }
+        
+        function renderInbox() {
+            if (emails.length === 0) {
+                inboxList.innerHTML = `<li id="inbox-placeholder">Inbox is empty.</li>`;
+                return;
+            }
+
+            inboxList.innerHTML = '';
+            emails.forEach((email, index) => {
+                const item = document.createElement('li');
+                item.innerHTML = `
+                    <div class="subject">${email.subject}</div>
+                    <div class="from">From: ${email.from.name} &lt;${email.from.email}&gt;</div>
+                `;
+                item.onclick = () => showEmailBody(index);
+                inboxList.appendChild(item);
+            });
+        }
+        
+        function showEmailBody(index) {
+            const email = emails[index];
+            if (!email) return;
+            
+            document.querySelector('.card:nth-child(5)').style.display = 'none'; // hide inbox
+            emailBodyContainer.style.display = 'block';
+
+            const iframeDoc = emailIframe.contentWindow.document;
+            iframeDoc.open();
+            iframeDoc.write(email.body);
+            iframeDoc.close();
+        }
+        
+        function showInboxView() {
+            document.querySelector('.card:nth-child(5)').style.display = 'block'; // show inbox
+            emailBodyContainer.style.display = 'none';
+        }
+
+
+        async function handleDeleteEmail() {
+            if (!currentEmail) return;
+            try {
+                await apiRequest('delete-email', { emailAddress: currentEmail });
+                currentEmail = null;
+                emailDisplay.textContent = '';
+                inboxList.innerHTML = `<li id="inbox-placeholder">Inbox is empty.</li>`;
+                refreshBtn.disabled = true;
+                deleteBtn.disabled = true;
+            } catch (error) {
+                // Error is already logged in apiRequest
+            }
+        }
+
+        generateBtn.addEventListener('click', handleGenerateEmail);
+        refreshBtn.addEventListener('click', handleFetchEmails);
+        deleteBtn.addEventListener('click', handleDeleteEmail);
+        backToInboxBtn.addEventListener('click', showInboxView);
+    </script>
+</body>
+                      </html>
