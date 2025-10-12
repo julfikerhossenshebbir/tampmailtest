@@ -163,7 +163,7 @@
                 <div class="input-group">
                     <label for="api-base-url">API Base URL</label>
                     <input type="text" id="api-base-url" placeholder="e.g., http://localhost:9002">
-                    <label for="api-key">API Key</label>
+                    <label for="api-key">API Key (optional for main app)</label>
                     <input type="text" id="api-key" placeholder="Enter your API Key">
                 </div>
             </div>
@@ -240,22 +240,24 @@
         async function apiRequest(endpoint, body) {
             const apiKey = apiKeyInput.value;
             const apiBaseUrl = apiBaseUrlInput.value;
-            if (!apiKey) {
-                log('API Key is required.', 'error');
-                throw new Error('API Key is required.');
-            }
+            
             if (!apiBaseUrl) {
                 log('API Base URL is required.', 'error');
                 throw new Error('API Base URL is required.');
             }
 
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+
+            if (apiKey) {
+                headers['x-api-key'] = apiKey;
+            }
+
             log(`Requesting POST ${apiBaseUrl}/api/${endpoint}...`);
             const response = await fetch(`${apiBaseUrl}/api/${endpoint}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-api-key': apiKey,
-                },
+                headers: headers,
                 body: JSON.stringify(body),
             });
 
@@ -351,4 +353,4 @@
         backToInboxBtn.addEventListener('click', showInboxView);
     </script>
 </body>
-                      </html>
+</html>
